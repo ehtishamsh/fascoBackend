@@ -39,6 +39,7 @@ interface Product {
   storage?: string;
   type?: string;
 }
+
 export async function getAllProducts() {
   return await prisma.product.findMany();
 }
