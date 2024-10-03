@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Product" ALTER COLUMN "screenSize" DROP NOT NULL,
+ALTER COLUMN "battery" DROP NOT NULL;

@@ -1,0 +1,204 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id    String @id @default(uuid())
+  email String  @unique
+  firstname String
+  lastname String
+  birthday String?
+  gender String?
+  password String 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role String @default("customer")
+   reviews Review[]
+   address Address[]
+   order Order[]
+}
+model Address {
+  id            String   @id @default(uuid())
+  firstname     String
+  lastname     String
+  addressLine1  String
+  addressLine2  String?
+  city          String
+  state         String
+  postalCode    String
+  country       String
+  default       Boolean @default(false)
+  shipping      Boolean @default(false)
+  billing       Boolean @default(false)
+  userId        String
+  user    User  @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  order  Order[]
+}
+model Variant {
+  id         String   @id @default(uuid())
+  variant    String   
+  price      String
+  product    Product  @relation(fields: [productId], references: [id]) 
+  productId  String
+  OrderItem OrderItem[]
+}
+
+model Product {
+  id            String   @id @default(uuid())
+  title         String   @unique
+  description   String
+  cover         String
+  price         String
+  stock         Int
+  brand         Brand    @relation(fields: [brandId], references: [id])
+  category      Category @relation(fields: [categoryId], references: [id])
+  variant       Variant[]
+  color         Color[]
+  discounted    String @default("0")
+  brandId       String
+  categoryId    String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  slug          String   @default("to be added")
+  
+  // Common fields
+  screenSize    String?
+  cpu           String?
+  battery       String?
+
+  // Fields for smartwatches 
+  features      String?
+  connectivity  String?
+  screenType    String?
+  sensor        String?
+
+  // Fields for smartphones and laptops
+  mainCamera    String?
+  frontCamera   String?
+  cores         String?
+  ram           String?
+
+  // Fields for camera 
+  zoom          String?
+  lens          String?
+  megapixels      String?  // Camera resolution
+  aperture        String?  // e.g., f/1.8
+  videoResolution String?  // e.g., 4K, 1080p
+
+  // Fields for headphones/earphones
+  type          String?  // In-Ear, Over-Ear, On-Ear, etc.
+
+  batteryLife   String?
+   noiseCancellation Boolean @default(false)
+    wireless      Boolean  @default(false)
+  microphone    Boolean  @default(false)
+
+  // Also have features and sensor
+
+  // Fields for gaming consoles
+  storage       String?
+  gpu           String?
+  maxResolution String?
+  numberOfControllers String?
+  compatibleGames String?
+
+  // Relations
+  reviews       Review[]
+  OrderItem     OrderItem[]
+}
+
+
+model Color {
+   id     String   @id @default(uuid())
+   color String  
+   product    Product  @relation(fields: [productId], references: [id]) 
+  productId  String
+  OrderItem OrderItem[]
+}
+model Brand {
+  id     String   @id @default(uuid())
+  name   String   @unique
+  products Product[]
+
+}
+
+
+
+model Category {
+  id String @id @default(uuid())
+  name String @unique
+  products Product[]
+}
+
+
+model Review {
+  id        String    @id @default(uuid())
+  rating    Int
+  comment   String?
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+model Order {
+  id          String        @id @default(uuid())
+  orderNumber Int           @unique
+  status String[] @default(["Order is in processing"])
+  orderStatus OrderStatus @default(PENDING)  
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  addressId   String
+  address     Address       @relation(fields: [addressId], references: [id])
+  amount    Int
+  currency  String @default("usd")
+  paymentIntentId String?
+  paymentStatus Payment @default(PENDING)
+  items       OrderItem[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+enum Payment {
+  PENDING
+  PAID
+  REFUNDED
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  variantId String?
+  variant   Variant? @relation(fields: [variantId], references: [id])
+  colorID String?
+  color   Color? @relation(fields: [colorID], references: [id])
+  quantity  Int
+  price     Float
+  total     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
