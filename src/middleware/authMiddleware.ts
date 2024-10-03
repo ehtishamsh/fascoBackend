@@ -21,7 +21,7 @@ export function authenticateToken(
     if (err) {
       return res.status(401).json({ message: "Unauthorized: Invalid token" });
     }
-    req.user = user;
+    (req as any).user = user;
     next();
   });
 }
